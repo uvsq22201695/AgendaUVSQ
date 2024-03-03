@@ -3,7 +3,7 @@ from googleapiclient.discovery import build  # Import the library to build the s
 from googleapiclient.errors import HttpError  # Import the library to catch HTTP errors during API calls.
 
 # Define the scope for the Google Calendar API; this determines what permissions your app will have.
-SCOPES = ["https://www.googleapis.com/auth/calendar"]
+SCOPES = ["https://www.googleapis.com/auth/calendar.app.created"]
 
 
 def get_api() -> tuple:
