@@ -1,5 +1,6 @@
 import gradio as gr
 
+
 def create_agenda(service, summary: str, timeZone: str) -> tuple:
     """
     This function creates a new Google Calendar with the given name.
@@ -31,13 +32,13 @@ def create_agenda(service, summary: str, timeZone: str) -> tuple:
     return False, created_calendar.get('id')
 
 
-def callback(_, response, exception):
+def callback(_, __, exception):
     """
     This function serves as a callback for batch HTTP requests.
     It is called for each individual request within a batch request.
 
     :param _: A unique identifier for the request within the batch.
-    :param response: The response for this request. None if there was an exception.
+    :param __: The response for this request. None if there was an exception.
     :param exception: The exception, if one occurred. None if the request was successful.
     """
 
