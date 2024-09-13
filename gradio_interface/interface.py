@@ -1,11 +1,12 @@
-import gradio as gr
 import datetime
 
+import gradio as gr
 from gradio_calendar import Calendar
-from data.edt_parser import parse_edt
+
 from api.auth import get_api
-from api.calendar_ops import create_agenda
 from api.calendar_ops import batch_create_events
+from api.calendar_ops import create_agenda
+from data.edt_parser import parse_edt
 
 
 def make_model():

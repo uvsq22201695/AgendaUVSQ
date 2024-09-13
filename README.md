@@ -36,13 +36,13 @@ Pour utiliser l'API Google Calendar, vous devez configurer un projet dans la Goo
 Vérifiez d'abord que Python est bien installé sur votre machine. Ensuite, utilisez la commande ci-dessous pour installer toutes les librairies nécessaires en une seule fois :
 
 ```bash
-pip install gradio==4.19.2 requests==2.31.0 gradio_calendar==0.0.4 google-api-python-client==2.120.0 google-auth-httplib2==0.2.0 google-auth-oauthlib==1.2.0 google-api-core==2.17.1 googleapis-common-protos==1.62.0 google-auth==2.28.1
+pip install gradio==4.44.0 requests==2.31.0 gradio_calendar==0.0.4 google-api-python-client==2.120.0 google-auth-httplib2==0.2.0 google-auth-oauthlib==1.2.0 google-api-core==2.17.1 googleapis-common-protos==1.62.0 google-auth==2.28.1
 ```
 
 Alternativement, vous pouvez aussi installer chaque librairie individuellement en utilisant les commandes suivantes :
 
 ```bash
-pip install gradio==4.19.2
+pip install gradio==4.44.0
 pip install requests==2.31.0
 pip install gradio_calendar==0.0.4
 pip install google-api-python-client==2.120.0

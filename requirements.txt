@@ -1,4 +1,4 @@
-gradio==4.19.2
+gradio==4.44.0
 requests==2.31.0
 gradio_calendar==0.0.4
 google-api-python-client==2.120.0
