@@ -1,6 +1,8 @@
-from google_auth_oauthlib.flow import InstalledAppFlow  # Import the library required for user authentication.
-from googleapiclient.discovery import build  # Import the library to build the service object for API calls.
-from googleapiclient.errors import HttpError  # Import the library to catch HTTP errors during API calls.
+import os
+
+from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
 
 # Define the scope for the Google Calendar API; this determines what permissions your app will have.
 SCOPES = ["https://www.googleapis.com/auth/calendar.app.created"]
@@ -15,6 +17,10 @@ def get_api() -> tuple:
         (True for an error, False for success), and the second element is either
         the service object for successful connections or an error message string.
     """
+
+    # Check if the credentials file exists.
+    if not os.path.exists("credentials.json"):
+        return True, "Fichier 'credentials.json' manquant à la racine du projet."
 
     try:
         # Initialize the OAuth2 flow controller with the client secrets and the desired scopes.
@@ -32,6 +38,8 @@ def get_api() -> tuple:
         return False, service
 
     except HttpError as error:
-        # Catch and return any HTTP errors that occur during the API calls.
         # Return True (error occurred) and the error message.
         return True, f"Une erreur s'est produite : {error}"
+    except Exception as e:
+        # Return True (error occurred) and the error message.
+        return True, f"Erreur inattendue : {e}"

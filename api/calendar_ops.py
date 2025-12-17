@@ -1,4 +1,42 @@
+import random
+
 import gradio as gr
+
+# Define a dictionary mapping event types to their corresponding color IDs.
+# Google Calendar Color IDs mappings used:
+# 7: Peacock (Bleu ciel)
+# 4: Flamingo (Rose clair)
+# 5: Banana (Jaune)
+# 6: Tangerine (Jaune-orange)
+# 2: Sage (Vert clair)
+# 10: Basil (Vert foncé)
+# 9: Blueberry (Bleu foncé - Défaut)
+# 8: Grey (Gris)
+EVENT_COLORS = {
+    'CM': '7',  # Bleu ciel
+    'Contrôle continu': '4',  # Rose clair
+    'TD': '8',  # Gris
+    'TD Cartable Numérique': '6',  # Jaune-orange
+    'CM/TD': '2',  # Vert clair
+    'Examen': '10',  # Vert foncé
+}
+
+DEFAULT_EVENT_COLOR = '9'
+
+
+def get_event_color(event_type: str) -> str:
+    """
+    This function returns the color ID for a given event type.
+    If the event type is not found in the EVENT_COLORS dictionary, it returns the default color ID.
+
+    :param event_type: The type of the event.
+    :return: The color ID as a string.
+    """
+    if not event_type:
+        return DEFAULT_EVENT_COLOR
+
+    normalized_type = event_type.strip()
+    return EVENT_COLORS.get(normalized_type, DEFAULT_EVENT_COLOR)
 
 
 def create_agenda(service, summary: str, timeZone: str) -> tuple:
@@ -18,14 +56,23 @@ def create_agenda(service, summary: str, timeZone: str) -> tuple:
         'timeZone': timeZone  # Setting the time zone for the calendar.
     }
 
-    # Use the Google Calendar API service to insert a new calendar.
-    # The 'insert' method is called on the 'calendars' resource of the service object,
-    # passing the 'calendar' object as the request body.
-    # The 'execute' method sends the request to the server and returns the response.
-    created_calendar = service.calendars().insert(body=calendar).execute()
+    # 1. Create the calendar using the Google Calendar API.
+    try:
+        created_calendar = service.calendars().insert(body=calendar).execute()
+        calendar_id = created_calendar.get('id')
+    except Exception as e:
+        return True, f"Erreur API: {str(e)}"
 
-    if created_calendar is None:
-        return True, "Une erreur s'est produite lors de la création de l'agenda."
+    # 2. Optionally, set a random color for the newly created calendar.
+    try:
+        random_color_id = str(random.randint(1, 24))
+        service.calendarList().patch(
+            calendarId=calendar_id,
+            body={'colorId': random_color_id}
+        ).execute()
+    except Exception as e:
+        # Non-blocking error: Log the error but do not fail the calendar creation.
+        print(f"Attention (Non bloquant) : Impossible de changer la couleur de l'agenda. {e}")
 
     # Return the 'id' of the created calendar.
     # The 'id' is used to uniquely identify the calendar in subsequent API calls.
@@ -41,7 +88,6 @@ def callback(_, __, exception):
     :param __: The response for this request. None if there was an exception.
     :param exception: The exception, if one occurred. None if the request was successful.
     """
-
     if exception is not None:
         gr.Warning(f"Une erreur s'est produite lors de la création de l'événement : {exception}")
 
@@ -56,18 +102,12 @@ def batch_create_events(service, events_data: list, calendar_id: str) -> None:
     :param calendar_id: The ID of the calendar where the events will be added.
     """
 
-    # Define a dictionary mapping event types to their corresponding color IDs.
-    colors = {
-        'CM': '1',  # Light blue
-        'Contrôle continu': '4',  # Pink
-        'TD Cartable Numérique': '8',  # Grey
-        'TD': '8',  # Grey
-    }
-
     # Create a new BatchHttpRequest object with the specified callback function.
     batch = service.new_batch_http_request(callback=callback)
 
     for event_data in events_data:
+        event_type = event_data['description'].get('Type', 'Not specified')
+
         # Construct an event object for each item in events_data.
         event = {
             'summary': event_data['description'].get('UE', 'No title'),  # Event title
@@ -81,12 +121,15 @@ def batch_create_events(service, events_data: list, calendar_id: str) -> None:
                 'dateTime': event_data['end'],  # Event end time
                 'timeZone': 'Europe/Paris',
             },
-            'description': f"Type: {event_data['description'].get('Type', 'Not specified')}",  # Event description
-            'colorId': colors.get(event_data['description'].get('Type', 'Not specified'), None),  # Event color
+            'description': f"Type: {event_type}",  # Event description
+            'colorId': get_event_color(event_type),  # Event color
         }
 
         # Add the event creation request to the batch, specifying the calendar ID and event object.
         batch.add(service.events().insert(calendarId=calendar_id, body=event))
 
     # Execute the batch request. The callback function will be called for each request in the batch.
-    batch.execute()
+    try:
+        batch.execute()
+    except Exception as e:
+        gr.Warning(f"Erreur lors de l'exécution du batch: {e}")
